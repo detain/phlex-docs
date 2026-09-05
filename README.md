@@ -20,8 +20,10 @@ Then open http://localhost:5173
 ## Building
 
 ```bash
-npm run docs:build   # builds to docs/.vitepress/dist, then checks heading anchors
-npm run docs:preview # preview the built site
+npm run docs:build      # builds to docs/.vitepress/dist, then checks heading anchors
+npm run docs:build:only # vitepress build alone, without the anchor gate
+npm run docs:preview    # preview the built site
+npm test                # vitest suite in tests/ — CI runs it before docs:build
 ```
 
 ## The link gate — what it does and does not check
@@ -49,6 +51,9 @@ reads the built output rather than the markdown so it never has to re-implement
 VitePress's slugify rules and cannot drift from them. It also refuses to report
 success if it scanned nothing — a missing `dist`, no HTML, or no
 fragment-bearing link at all is a non-zero exit saying the gate could not run.
+The gate itself is covered by `tests/anchor-gate.test.ts`, which runs the real
+script against synthetic fixture sites and asserts both verdicts, so deleting
+or neutering it goes red in `npm test`.
 
 Enabling it turned up **78 already-broken anchors across 22 pages**, all now
 fixed. Two slugify rules accounted for nearly all of them, and both are easy to
@@ -75,9 +80,10 @@ grep -oE '<h[1-6] id="[^"]+"' docs/.vitepress/dist/reference/api.html
 ```
 
 Both gates run in CI on every push, pull request and manual dispatch, in the
-`Docs / Build Docs` job. Note that this repository has **no branch protection**,
-so a red check is *advisory*: it is visible on the pull request but does not by
-itself block a merge.
+`Docs / Build Docs` job, which runs `npm test` before `npm run docs:build`.
+Note that this repository has **no branch protection**, so a red check is
+*advisory*: it is visible on the pull request but does not by itself block a
+merge.
 
 ## Contributing
 
@@ -86,8 +92,10 @@ Doc PRs are welcome! Please keep changes focused on the markdown content in `doc
 Authoring conventions — sidebar registration, section landing-page keys, the
 anchor-slug rules above, and the OpenAPI-sibling convention for pages under
 `docs/reference/api/` — are kept in
-[`.claude/rules/docs-authoring.md`](.claude/rules/docs-authoring.md). That file
-is tracked deliberately: it is repo knowledge, not per-machine agent config.
+[`.claude/rules/docs-authoring.md`](.claude/rules/docs-authoring.md), with the
+test suite's conventions in
+[`.claude/rules/repo-tests.md`](.claude/rules/repo-tests.md). Those files are
+tracked deliberately: they are repo knowledge, not per-machine agent config.
 The rest of `.claude/` stays ignored.
 
 For developer docs, see the [Developer Documentation](https://detain.github.io/phlix-docs/dev/architecture-server).

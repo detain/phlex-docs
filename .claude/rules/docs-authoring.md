@@ -54,6 +54,7 @@ VitePress covers it.
 Run after any edit that adds or changes links or headings:
 
 ```bash
+npm test                # the Vitest suite — CI runs it before the build
 npm run docs:build      # vitepress build + the anchor gate
 npm run check:anchors   # anchor gate alone, against the existing dist/
 npm run docs:preview
@@ -88,9 +89,11 @@ every inbound link — give the target heading an explicit ASCII anchor:
 
 Both gates run in CI as `Docs / Build Docs` on every push, pull request and
 manual dispatch (that job deliberately carries no `if:`, because a skipped job
-reports `skipped`, which counts as success). This repository has **no branch
-protection**, so a red check is visible on the pull request but does not by
-itself block a merge.
+reports `skipped`, which counts as success). That job runs `npm test` before
+`npm run docs:build`, so the gate script's own coverage in
+`tests/anchor-gate.test.ts` fails first — see `.claude/rules/repo-tests.md`.
+This repository has **no branch protection**, so a red check is visible on the
+pull request but does not by itself block a merge.
 
 ## API reference pages
 
